@@ -16,6 +16,11 @@ window.onload = function() {
     var loadtotal = 0;
     var preloaded = false;
     
+    // Função para gerar número aleatório entre min e max
+    function randRange(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     function loadImages(imagefiles) {
         loadcount = 0;
         loadtotal = imagefiles.length;
