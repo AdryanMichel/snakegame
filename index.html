@@ -1,11 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<title>snake.com</title>
-<script type="text/javascript" src="snake.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Cobra</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #577ddb;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #viewport {
+            border: 2px solid #000;
+            background-color: #f7e697;
+        }
+        #controls {
+            display: flex;
+            margin-top: 20px;
+            justify-content: center;
+            gap: 10px;
+        }
+        .arrow-button {
+            width: 40px;
+            height: 40px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #score {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .arrow-button:active {
+            background-color: #888;
+        }
+    </style>
 </head>
 <body>
-<canvas id="viewport" width="640" height="480"></canvas>
+    <div id="game-container">
+        <div id="score">Pontuação: 0</div>
+        <canvas id="viewport" width="640" height="480"></canvas>
+        <div id="controls">
+            <button class="arrow-button" id="up">↑</button>
+            <div>
+                <button class="arrow-button" id="left">←</button>
+                <button class="arrow-button" id="right">→</button>
+            </div>
+            <button class="arrow-button" id="down">↓</button>
+        </div>
+    </div>
+    <script src="snake-game.js"></script>
 </body>
 </html>
