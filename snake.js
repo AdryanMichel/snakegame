@@ -1,11 +1,10 @@
-
-// The function gets called when the window is fully loaded
+// A função é chamada quando a janela está totalmente carregada
 window.onload = function() {
-    // Get the canvas and context
+    // Obtém o canvas e o contexto
     var canvas = document.getElementById("viewport"); 
     var context = canvas.getContext("2d");
     
-    // Timing and frames per second
+    // Tempo e quadros por segundo
     var lastframe = 0;
     var fpstime = 0;
     var framecount = 0;
@@ -13,56 +12,56 @@ window.onload = function() {
     
     var initialized = false;
     
-    // Images
+    // Imagens
     var images = [];
     var tileimage;
     
-    // Image loading global variables
+    // Variáveis globais para carregamento de imagens
     var loadcount = 0;
     var loadtotal = 0;
     var preloaded = false;
     
-    // Load images
+    // Carregar imagens
     function loadImages(imagefiles) {
-        // Initialize variables
+        // Inicializa variáveis
         loadcount = 0;
         loadtotal = imagefiles.length;
         preloaded = false;
         
-        // Load the images
+        // Carrega as imagens
         var loadedimages = [];
         for (var i=0; i<imagefiles.length; i++) {
-            // Create the image object
+            // Cria o objeto de imagem
             var image = new Image();
             
-            // Add onload event handler
+            // Adiciona o manipulador de evento onload
             image.onload = function () {
                 loadcount++;
                 if (loadcount == loadtotal) {
-                    // Done loading
+                    // Carregamento concluído
                     preloaded = true;
                 }
             };
             
-            // Set the source url of the image
+            // Define a URL da fonte da imagem
             image.src = imagefiles[i];
             
-            // Save to the image array
+            // Salva no array de imagens
             loadedimages[i] = image;
         }
         
-        // Return an array of images
+        // Retorna um array de imagens
         return loadedimages;
     }
     
-    // Level properties
+    // Propriedades do nível
     var Level = function (columns, rows, tilewidth, tileheight) {
         this.columns = columns;
         this.rows = rows;
         this.tilewidth = tilewidth;
         this.tileheight = tileheight;
         
-        // Initialize tiles array
+        // Inicializa o array de tiles
         this.tiles = [];
         for (var i=0; i<this.columns; i++) {
             this.tiles[i] = [];
@@ -72,40 +71,39 @@ window.onload = function() {
         }
     };
     
-    // Generate a default level with walls
+    // Gera um nível padrão com paredes
     Level.prototype.generate = function() {
         for (var i=0; i<this.columns; i++) {
             for (var j=0; j<this.rows; j++) {
                 if (i == 0 || i == this.columns-1 ||
                     j == 0 || j == this.rows-1) {
-                    // Add walls at the edges of the level
+                    // Adiciona paredes nas bordas do nível
                     this.tiles[i][j] = 1;
                 } else {
-                    // Add empty space
+                    // Adiciona espaço vazio
                     this.tiles[i][j] = 0;
                 }
             }
         }
     };
     
-    
-    // Snake
+    // Cobra
     var Snake = function() {
         this.init(0, 0, 1, 10, 1);
     }
     
-    // Direction table: Up, Right, Down, Left
+    // Tabela de direções: Cima, Direita, Baixo, Esquerda
     Snake.prototype.directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
     
-    // Initialize the snake at a location
+    // Inicializa a cobra em uma localização
     Snake.prototype.init = function(x, y, direction, speed, numsegments) {
         this.x = x;
         this.y = y;
-        this.direction = direction; // Up, Right, Down, Left
-        this.speed = speed;         // Movement speed in blocks per second
+        this.direction = direction; // Cima, Direita, Baixo, Esquerda
+        this.speed = speed;         // Velocidade de movimento em blocos por segundo
         this.movedelay = 0;
         
-        // Reset the segments and add new ones
+        // Redefine os segmentos e adiciona novos
         this.segments = [];
         this.growsegments = 0;
         for (var i=0; i<numsegments; i++) {
@@ -114,12 +112,12 @@ window.onload = function() {
         }
     }
     
-    // Increase the segment count
+    // Aumenta a contagem de segmentos
     Snake.prototype.grow = function() {
         this.growsegments++;
     };
     
-    // Check we are allowed to move
+    // Verifica se podemos mover
     Snake.prototype.tryMove = function(dt) {
         this.movedelay += dt;
         var maxmovedelay = 1 / this.speed;
@@ -129,76 +127,76 @@ window.onload = function() {
         return false;
     };
     
-    // Get the position of the next move
+    // Obtém a posição do próximo movimento
     Snake.prototype.nextMove = function() {
         var nextx = this.x + this.directions[this.direction][0];
         var nexty = this.y + this.directions[this.direction][1];
         return {x:nextx, y:nexty};
     }
     
-    // Move the snake in the direction
+    // Move a cobra na direção
     Snake.prototype.move = function() {
-        // Get the next move and modify the position
+        // Obtém o próximo movimento e modifica a posição
         var nextmove = this.nextMove();
         this.x = nextmove.x;
         this.y = nextmove.y;
     
-        // Get the position of the last segment
+        // Obtém a posição do último segmento
         var lastseg = this.segments[this.segments.length-1];
         var growx = lastseg.x;
         var growy = lastseg.y;
     
-        // Move segments to the position of the previous segment
+        // Move os segmentos para a posição do segmento anterior
         for (var i=this.segments.length-1; i>=1; i--) {
             this.segments[i].x = this.segments[i-1].x;
             this.segments[i].y = this.segments[i-1].y;
         }
         
-        // Grow a segment if needed
+        // Cresce um segmento se necessário
         if (this.growsegments > 0) {
             this.segments.push({x:growx, y:growy});
             this.growsegments--;
         }
         
-        // Move the first segment
+        // Move o primeiro segmento
         this.segments[0].x = this.x;
         this.segments[0].y = this.y;
         
-        // Reset movedelay
+        // Redefine movedelay
         this.movedelay = 0;
     }
 
-    // Create objects
+    // Cria objetos
     var snake = new Snake();
     var level = new Level(20, 15, 32, 32);
     
-    // Variables
-    var score = 0;              // Score
-    var gameover = true;        // Game is over
-    var gameovertime = 1;       // How long we have been game over
-    var gameoverdelay = 0.5;    // Waiting time after game over
+    // Variáveis
+    var score = 0;              // Pontuação
+    var gameover = true;        // O jogo acabou
+    var gameovertime = 1;       // Quanto tempo estamos em game over
+    var gameoverdelay = 0.5;    // Tempo de espera após game over
     
-    // Initialize the game
+    // Inicializa o jogo
     function init() {
-        // Load images
+        // Carrega imagens
         images = loadImages(["snake-graphics.png"]);
         tileimage = images[0];
     
-        // Add mouse events
+        // Adiciona eventos de mouse
         canvas.addEventListener("mousedown", onMouseDown);
         
-        // Add keyboard events
+        // Adiciona eventos de teclado
         document.addEventListener("keydown", onKeyDown);
         
-        // New game
+        // Novo jogo
         newGame();
         gameover = true;
     
-        // Enter main loop
+        // Entra no loop principal
         main(0);
     }
     
-    // Check if we can start a new game
+    // Verifica se podemos iniciar um novo jogo
     function tryNewGame() {
         if (gameovertime > gameoverdelay) {
             newGame();
@@ -207,66 +205,66 @@ window.onload = function() {
     }
     
     function newGame() {
-        // Initialize the snake
+        // Inicializa a cobra
         snake.init(10, 10, 1, 10, 4);
         
-        // Generate the default level
+        // Gera o nível padrão
         level.generate();
         
-        // Add an apple
+        // Adiciona uma maçã
         addApple();
         
-        // Initialize the score
+        // Inicializa a pontuação
         score = 0;
         
-        // Initialize variables
+        // Inicializa variáveis
         gameover = false;
     }
     
-    // Add an apple to the level at an empty position
+    // Adiciona uma maçã ao nível em uma posição vazia
     function addApple() {
-        // Loop until we have a valid apple
+        // Loop até termos uma maçã válida
         var valid = false;
         while (!valid) {
-            // Get a random position
+            // Obtém uma posição aleatória
             var ax = randRange(0, level.columns-1);
             var ay = randRange(0, level.rows-1);
             
-            // Make sure the snake doesn't overlap the new apple
+            // Certifica-se de que a cobra não sobreponha a nova maçã
             var overlap = false;
             for (var i=0; i<snake.segments.length; i++) {
-                // Get the position of the current snake segment
+                // Obtém a posição do segmento atual da cobra
                 var sx = snake.segments[i].x;
                 var sy = snake.segments[i].y;
                 
-                // Check overlap
+                // Verifica sobreposição
                 if (ax == sx && ay == sy) {
                     overlap = true;
                     break;
                 }
             }
             
-            // Tile must be empty
+            // O tile deve estar vazio
             if (!overlap && level.tiles[ax][ay] == 0) {
-                // Add an apple at the tile position
+                // Adiciona uma maçã na posição do tile
                 level.tiles[ax][ay] = 2;
                 valid = true;
             }
         }
     }
     
-    // Main loop
+    // Loop principal
     function main(tframe) {
-        // Request animation frames
+        // Solicita quadros de animação
         window.requestAnimationFrame(main);
         
         if (!initialized) {
-            // Preloader
+            // Pré-carregador
             
-            // Clear the canvas
+            // Limpa o canvas
             context.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw a progress bar
+            // Desenha uma barra de progresso
             var loadpercentage = loadcount/loadtotal;
             context.strokeStyle = "#ff8080";
             context.lineWidth=3;
@@ -274,8 +272,8 @@ window.onload = function() {
             context.fillStyle = "#ff8080";
             context.fillRect(18.5, 0.5 + canvas.height - 51, loadpercentage*(canvas.width-37), 32);
             
-            // Draw the progress text
-            var loadtext = "Loaded " + loadcount + "/" + loadtotal + " images";
+            // Desenha o texto de progresso
+            var loadtext = "Carregado " + loadcount + "/" + loadtotal + " imagens";
             context.fillStyle = "#000000";
             context.font = "16px Verdana";
             context.fillText(loadtext, 18, 0.5 + canvas.height - 63);
@@ -284,18 +282,18 @@ window.onload = function() {
                 initialized = true;
             }
         } else {
-            // Update and render the game
+            // Atualiza e renderiza o jogo
             update(tframe);
             render();
         }
     }
     
-    // Update the game state
+    // Atualiza o estado do jogo
     function update(tframe) {
         var dt = (tframe - lastframe) / 1000;
         lastframe = tframe;
         
-        // Update the fps counter
+        // Atualiza o contador de fps
         updateFps(dt);
         
         if (!gameover) {
@@ -306,58 +304,56 @@ window.onload = function() {
     }
     
     function updateGame(dt) {
-        // Move the snake
+        // Move a cobra
         if (snake.tryMove(dt)) {
-            // Check snake collisions
+            // Verifica colisões da cobra
             
-            // Get the coordinates of the next move
+            // Obtém as coordenadas do próximo movimento
             var nextmove = snake.nextMove();
             var nx = nextmove.x;
             var ny = nextmove.y;
             
             if (nx >= 0 && nx < level.columns && ny >= 0 && ny < level.rows) {
                 if (level.tiles[nx][ny] == 1) {
-                    // Collision with a wall
+                    // Colisão com uma parede
                     gameover = true;
                 }
                 
-                // Collisions with the snake itself
+                // Colisões com a própria cobra
                 for (var i=0; i<snake.segments.length; i++) {
                     var sx = snake.segments[i].x;
                     var sy = snake.segments[i].y;
                     
                     if (nx == sx && ny == sy) {
-                        // Found a snake part
+                        // Encontrou uma parte da cobra
                         gameover = true;
                         break;
                     }
                 }
                 
                 if (!gameover) {
-                    // The snake is allowed to move
+                    // A cobra pode se mover
 
-                    // Move the snake
+                    // Move a cobra
                     snake.move();
                     
-                    // Check collision with an apple
+                    // Verifica colisão com uma maçã
                     if (level.tiles[nx][ny] == 2) {
-                        // Remove the apple
+                        // Remove a maçã
                         level.tiles[nx][ny] = 0;
                         
-                        // Add a new apple
+                        // Adiciona uma nova maçã
                         addApple();
                         
-                        // Grow the snake
+                        // Faz a cobra crescer
                         snake.grow();
                         
-                        // Add a point to the score
+                        // Adiciona um ponto à pontuação
                         score++;
                     }
-                    
-
                 }
             } else {
-                // Out of bounds
+                // Fora dos limites
                 gameover = true;
             }
             
@@ -369,22 +365,22 @@ window.onload = function() {
     
     function updateFps(dt) {
         if (fpstime > 0.25) {
-            // Calculate fps
+            // Calcula fps
             fps = Math.round(framecount / fpstime);
             
-            // Reset time and framecount
+            // Redefine o tempo e o contador de quadros
             fpstime = 0;
             framecount = 0;
         }
         
-        // Increase time and framecount
+        // Aumenta o tempo e o contador de quadros
         fpstime += dt;
         framecount++;
     }
     
-    // Render the game
+    // Renderiza o jogo
     function render() {
-        // Draw background
+        // Desenha o fundo
         context.fillStyle = "#577ddb";
         context.fillRect(0, 0, canvas.width, canvas.height);
         
@@ -398,36 +394,36 @@ window.onload = function() {
             
             context.fillStyle = "#ffffff";
             context.font = "24px Verdana";
-            drawCenterText("Press any key to start!", 0, canvas.height/2, canvas.width);
+            drawCenterText("Pressione qualquer tecla para começar!", 0, canvas.height/2, canvas.width);
         }
     }
     
-    // Draw the level tiles
+    // Desenha os tiles do nível
     function drawLevel() {
         for (var i=0; i<level.columns; i++) {
             for (var j=0; j<level.rows; j++) {
-                // Get the current tile and location
+                // Obtém o tile atual e a localização
                 var tile = level.tiles[i][j];
                 var tilex = i*level.tilewidth;
                 var tiley = j*level.tileheight;
                 
-                // Draw tiles based on their type
+                // Desenha os tiles com base em seu tipo
                 if (tile == 0) {
-                    // Empty space
+                    // Espaço vazio
                     context.fillStyle = "#f7e697";
                     context.fillRect(tilex, tiley, level.tilewidth, level.tileheight);
                 } else if (tile == 1) {
-                    // Wall
+                    // Parede
                     context.fillStyle = "#bcae76";
                     context.fillRect(tilex, tiley, level.tilewidth, level.tileheight);
                 } else if (tile == 2) {
-                    // Apple
+                    // Maçã
                     
-                    // Draw apple background
+                    // Desenha o fundo da maçã
                     context.fillStyle = "#f7e697";
                     context.fillRect(tilex, tiley, level.tilewidth, level.tileheight);
                     
-                    // Draw the apple image
+                    // Desenha a imagem da maçã
                     var tx = 0;
                     var ty = 3;
                     var tilew = 64;
@@ -438,9 +434,9 @@ window.onload = function() {
         }
     }
     
-    // Draw the snake
+    // Desenha a cobra
     function drawSnake() {
-        // Loop over every snake segment
+        // Loop sobre cada segmento da cobra
         for (var i=0; i<snake.segments.length; i++) {
             var segment = snake.segments[i];
             var segx = segment.x;
@@ -448,133 +444,133 @@ window.onload = function() {
             var tilex = segx*level.tilewidth;
             var tiley = segy*level.tileheight;
             
-            // Sprite column and row that gets calculated
+            // Coluna e linha do sprite que são calculadas
             var tx = 0;
             var ty = 0;
             
             if (i == 0) {
-                // Head; Determine the correct image
-                var nseg = snake.segments[i+1]; // Next segment
+                // Cabeça; Determina a imagem correta
+                var nseg = snake.segments[i+1]; // Próximo segmento
                 if (segy < nseg.y) {
-                    // Up
+                    // Cima
                     tx = 3; ty = 0;
                 } else if (segx > nseg.x) {
-                    // Right
+                    // Direita
                     tx = 4; ty = 0;
                 } else if (segy > nseg.y) {
-                    // Down
+                    // Baixo
                     tx = 4; ty = 1;
                 } else if (segx < nseg.x) {
-                    // Left
+                    // Esquerda
                     tx = 3; ty = 1;
                 }
             } else if (i == snake.segments.length-1) {
-                // Tail; Determine the correct image
-                var pseg = snake.segments[i-1]; // Prev segment
+                // Cauda; Determina a imagem correta
+                var pseg = snake.segments[i-1]; // Segmento anterior
                 if (pseg.y < segy) {
-                    // Up
+                    // Cima
                     tx = 3; ty = 2;
                 } else if (pseg.x > segx) {
-                    // Right
+                    // Direita
                     tx = 4; ty = 2;
                 } else if (pseg.y > segy) {
-                    // Down
+                    // Baixo
                     tx = 4; ty = 3;
                 } else if (pseg.x < segx) {
-                    // Left
+                    // Esquerda
                     tx = 3; ty = 3;
                 }
             } else {
-                // Body; Determine the correct image
-                var pseg = snake.segments[i-1]; // Previous segment
-                var nseg = snake.segments[i+1]; // Next segment
+                // Corpo; Determina a imagem correta
+                var pseg = snake.segments[i-1]; // Segmento anterior
+                var nseg = snake.segments[i+1]; // Próximo segmento
                 if (pseg.x < segx && nseg.x > segx || nseg.x < segx && pseg.x > segx) {
-                    // Horizontal Left-Right
+                    // Horizontal Esquerda-Direita
                     tx = 1; ty = 0;
                 } else if (pseg.x < segx && nseg.y > segy || nseg.x < segx && pseg.y > segy) {
-                    // Angle Left-Down
+                    // Ângulo Esquerda-Baixo
                     tx = 2; ty = 0;
                 } else if (pseg.y < segy && nseg.y > segy || nseg.y < segy && pseg.y > segy) {
-                    // Vertical Up-Down
+                    // Vertical Cima-Baixo
                     tx = 2; ty = 1;
                 } else if (pseg.y < segy && nseg.x < segx || nseg.y < segy && pseg.x < segx) {
-                    // Angle Top-Left
+                    // Ângulo Cima-Esquerda
                     tx = 2; ty = 2;
                 } else if (pseg.x > segx && nseg.y < segy || nseg.x > segx && pseg.y < segy) {
-                    // Angle Right-Up
+                    // Ângulo Direita-Cima
                     tx = 0; ty = 1;
                 } else if (pseg.y > segy && nseg.x > segx || nseg.y > segy && pseg.x > segx) {
-                    // Angle Down-Right
+                    // Ângulo Baixo-Direita
                     tx = 0; ty = 0;
                 }
             }
             
-            // Draw the image of the snake part
+            // Desenha a imagem da parte da cobra
             context.drawImage(tileimage, tx*64, ty*64, 64, 64, tilex, tiley,
                               level.tilewidth, level.tileheight);
         }
     }
     
-    // Draw text that is centered
+    // Desenha texto que está centralizado
     function drawCenterText(text, x, y, width) {
         var textdim = context.measureText(text);
         context.fillText(text, x + (width-textdim.width)/2, y);
     }
     
-    // Get a random int between low and high, inclusive
+    // Obtém um inteiro aleatório entre low e high, inclusivo
     function randRange(low, high) {
         return Math.floor(low + Math.random()*(high-low+1));
     }
     
-    // Mouse event handlers
+    // Manipuladores de eventos do mouse
     function onMouseDown(e) {
-        // Get the mouse position
+        // Obtém a posição do mouse
         var pos = getMousePos(canvas, e);
         
         if (gameover) {
-            // Start a new game
+            // Inicia um novo jogo
             tryNewGame();
         } else {
-            // Change the direction of the snake
+            // Altera a direção da cobra
             snake.direction = (snake.direction + 1) % snake.directions.length;
         }
     }
     
-    // Keyboard event handler
+    // Manipulador de eventos de teclado
     function onKeyDown(e) {
         if (gameover) {
             tryNewGame();
         } else {
             if (e.keyCode == 37 || e.keyCode == 65) {
-                // Left or A
+                // Esquerda ou A
                 if (snake.direction != 1)  {
                     snake.direction = 3;
                 }
             } else if (e.keyCode == 38 || e.keyCode == 87) {
-                // Up or W
+                // Cima ou W
                 if (snake.direction != 2)  {
                     snake.direction = 0;
                 }
             } else if (e.keyCode == 39 || e.keyCode == 68) {
-                // Right or D
+                // Direita ou D
                 if (snake.direction != 3)  {
                     snake.direction = 1;
                 }
             } else if (e.keyCode == 40 || e.keyCode == 83) {
-                // Down or S
+                // Baixo ou S
                 if (snake.direction != 0)  {
                     snake.direction = 2;
                 }
             }
             
-            // Grow for demonstration purposes
+            // Cresce para fins de demonstração
             if (e.keyCode == 32) {
                 snake.grow();
             }
         }
     }
     
-    // Get the mouse position
+    // Obtém a posição do mouse
     function getMousePos(canvas, e) {
         var rect = canvas.getBoundingClientRect();
         return {
@@ -583,6 +579,6 @@ window.onload = function() {
         };
     }
     
-    // Call init to start the game
+    // Chama init para iniciar o jogo
     init();
 };
